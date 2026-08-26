@@ -1,0 +1,38 @@
+services:
+  fast-api-docker-poetry:
+    image: local/fast-api-server:${BUILD_TAG:-local-dev}
+    privileged: true
+    ports:
+      - "8009:8009"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${TARGET:-development}
+    environment:
+      POSTGRES_DB_HOST: fast-api-postgres # Change to localhost on Linux
+      SET_JUMBO_MTU: "false"
+      UVICORN_RELOAD: "true"
+    volumes:
+      - ./:/home/appuser
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    depends_on:
+      - fast-api-postgres
+    # network_mode: host # Uncomment this line on Linux to use host network
+    networks: # Comment this line on Linux to use host network
+      - app-network # Comment this line on Linux to use host network
+
+  fast-api-postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: fastapi_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks: # Comment this line on Linux to use host network
+      - app-network # Comment this line on Linux to use host network
+
+networks: #  Comment this line on Linux to use host network
+  app-network: #  Comment this line on Linux to use host network
+    driver: bridge #  Comment this line on Linux to use host network
